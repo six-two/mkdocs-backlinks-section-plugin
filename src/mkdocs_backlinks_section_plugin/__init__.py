@@ -4,26 +4,22 @@
 import os
 import html
 import random
-import urllib
-from typing import Optional
-
 import re
+from typing import Optional
 # pip
-#from bs4 import BeautifulSoup
 from mkdocs.config.base import Config
-from mkdocs.config.config_options import ListOfItems, Type
+from mkdocs.config.config_options import Type
 from mkdocs.config.defaults import MkDocsConfig
-from mkdocs.plugins import BasePlugin
-from mkdocs.structure.files import File, Files
+from mkdocs.plugins import BasePlugin, get_plugin_logger
+from mkdocs.structure.files import Files
 from mkdocs.structure.pages import Page
 
-SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
+# Marks URLs that should be ignored
 BAD_URL_STARTS = ["http://", "https://", "tel:", "#"]
-LINK_START_TAG_REGEX = re.compile(r"<a[^>]*>")
-
-# Use a random placeholder to prevent accidential collisions with strings like BACKLINK_PLUGIN
-BACKLINK_PLACEHOLDER = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"
-
+# Regular expression for anchor tags
+LINK_START_TAG_REGEX = re.compile(r"<a[^>]*>", re.MULTILINE)
+# Logger
+LOGGER = get_plugin_logger(__name__)
 
 class BacklinksSectionConfig(Config):
     title = Type(str, default="Backlinks")
@@ -32,18 +28,22 @@ class BacklinksSectionConfig(Config):
 
 
 class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
+    def __init__(self):
+        # Use a random placeholder to prevent accidential collisions with strings like BACKLINK_PLUGIN
+        self.backlink_placeholder = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"
     
     def on_nav(self, nav, config: MkDocsConfig, files: Files):
-        self.file_dict = {normalize_link(file.url): file for file in files}
-        self.backlinks = {key: set() for key in self.file_dict.keys()}
-
+        # self.backlinks | normalized_url: str -> (page_url: str, page_title: str)
+        self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files}
         return nav
 
     def on_page_markdown(self, markdown, page: Page, config: MkDocsConfig, files: Files) -> str:
+        # Add backlinks section placeholder
         # We need to do this in the Markdown phase, so that the new section is added to the table of contents
-        return markdown + f"\n\n## {self.config.title}\n\n" + BACKLINK_PLACEHOLDER
+        return f"{markdown}\n\n## {self.config.title}\n\n{self.backlink_placeholder}"
 
     def on_page_content(self, html, page: Page, config: MkDocsConfig, files: Files) -> str:
+        # Collect the backlinks
         for url in parse_links_to_other_pages(html):
             destination_link = normalize_link(url, page.url)
 
@@ -53,21 +53,20 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         return html
 
     def on_post_page(self, output: str, page: Page, config: MkDocsConfig) -> str:
+        # Insert the backlink list
         key = normalize_link(page.url, "")
         links = self.backlinks[key]
         if links:
-            backlink_html = "" #f"<h2>{html.escape(self.config.title)}</h2>"
-            if self.config.description:
-                backlink_html += f"<p>{html.escape(self.config.description)}</p>"
+            backlink_html = f"<p>{html.escape(self.config.description)}</p>" if self.config.description else ""
             backlink_html += "<ul>"
             # sort by title
             for link, title in sorted(links, key=lambda x: x[1]):
                 link_to_page = "/" + link # @TODO: only for testing, this will break later # @TODO: escape?
                 backlink_html += f'<li><a href="{link_to_page}">{html.escape(title)}</a></li>'
             backlink_html += "</ul>"
-            output = output.replace(BACKLINK_PLACEHOLDER, backlink_html)
+            output = output.replace(self.backlink_placeholder, backlink_html)
         else:
-            output = output.replace(BACKLINK_PLACEHOLDER, f"<p>{html.escape(self.config.description_no_links)}</p>")
+            output = output.replace(self.backlink_placeholder, f"<p>{html.escape(self.config.description_no_links)}</p>")
         return output
 
 
@@ -109,11 +108,13 @@ def parse_href_from_anchor_tag(anchor_tag: str) -> Optional[str]:
                 if link[0] == link[-1]:
                     return link[1:-1]
                 else:
-                    print(f"href does not have matching quotes: {link}")
+                    LOGGER.warn(f"href does not have matching quotes: {link}")
+                    return ""
             else:
                 return link
     
-    print(f"anchor tag has no href: {anchor_tag}")
+    LOGGER.warn(f"anchor tag has no href: {anchor_tag}")
+    return ""
 
 
 def parse_links_to_other_pages(html: str) -> list[str]:
@@ -124,5 +125,4 @@ def parse_links_to_other_pages(html: str) -> list[str]:
             results.append(link)
     
     return results
-
 
