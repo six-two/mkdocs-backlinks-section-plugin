@@ -24,6 +24,8 @@ plugins:
 
 ## Configuration
 
+### Text
+
 You can customize the text inserted by the plugin with the configuration values below:
 
 Option | Type | Default value
@@ -43,7 +45,41 @@ plugins:
     description_no_links: Es gibt keine Verweise auf diese Seite.
 ```
 
+### Ignore pages
+
+You can ignore source and destination pages for the backlink section.
+The values are interpreted as [glob-like](https://docs.python.org/3/library/pathlib.html#pathlib-pattern-language) patterns, wich are matched against the paths of the Markdown source files.
+
+Option | Type | Default value
+--- | --- | ---
+`ignore_links_from` | list of strings | `[]`
+`ignore_links_to` | list of strings | `[]`
+
+For example you may have a page listing all [tags](https://squidfunk.github.io/mkdocs-material/setup/setting-up-tags/) (and thus linking to almost all pages) and want to prevent every page having a backlink to it:
+
+```yaml
+plugins:
+- search
+- backlinks_section:
+    ignore_links_from:
+    - path/with/globs/**/to/tags.md
+```
+
+If you do not want a backlinks section on some pages, you can disable it with the `ignore_links_to` option:
+```yaml
+plugins:
+- search
+- backlinks_section:
+    ignore_links_to:
+    - path/with/globs/**/to/files-without-backlink-section-*.md
+    - index.md
+```
+
 ## Notable changes
+
+### HEAD
+
+- Added `ignore_links_from` and `ignore_links_to` configuration options
 
 ### Version 0.0.1
 

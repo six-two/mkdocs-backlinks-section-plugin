@@ -3,8 +3,11 @@ use_directory_urls: true
 
 plugins:
 - search
-- backlinks_section
-# - backlinks_section:
+- backlinks_section:
+    ignore_links_from:
+    - "/ignore*.md"
+    ignore_links_to:
+    - edge-cases.md
 #     title: Rückverweise
 #     description: "Die folgenden Seiten referenzieren die aktuelle Seite:"
 #     description_no_links: Es gibt keine Verweise auf diese Seite.
