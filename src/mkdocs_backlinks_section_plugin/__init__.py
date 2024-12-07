@@ -40,6 +40,11 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files}
         self.ignore_links_from = [normalize_link(x) for x in self.config.ignore_links_from]
         self.ignore_links_to = [x[1:] if x.startswith("/") else x for x in self.config.ignore_links_to]
+
+        if not hasattr(PurePath("/"), "full_match"):
+            # Fullmatch "**" is not supported. Check if the patterns actually use it
+            if "**" in ",".join(self.ignore_links_from + self.ignore_links_to):
+                LOGGER.warning("Your Python does not support the Path.full_match method. Since you use '**' in your patterns, this may not be interpreted correctly. To fix it update your Python to 3.13")
         return nav
 
     def on_page_markdown(self, markdown, page: Page, config: MkDocsConfig, files: Files) -> str:
@@ -95,19 +100,25 @@ def get_relative_path_from(current_page: str, absolute_destination_link: str) ->
     level = current_page.count("/")
     relative_url = ("../" * level) + absolute_destination_link
 
-    LOGGER.warning(f"{current_page} | {absolute_destination_link} | {relative_url}")
-
     return relative_url
 
 
 def should_ignore_page(page: Page, ignore_pattern_list: list[str]) -> bool:
     page_path = PurePath(page.file.src_uri)
     for ignore_pattern in ignore_pattern_list:
-        # https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.full_match
-        if page_path.full_match(ignore_pattern, case_sensitive=False):
+        if path_try_full_match(page_path, ignore_pattern, False):
             return True
     
     return False
+
+def path_try_full_match(page_path: PurePath, ignore_pattern: str, case_sensitive: bool) -> bool:
+    # https://docs.python.org/3/library/pathlib.html#pathlib.PurePath.full_match
+    # Sadly it only exists in 3.13. So I need to use the worse version "match" if we have an old python version
+    if hasattr(page_path, "full_match"):
+        return page_path.full_match(ignore_pattern, case_sensitive=case_sensitive)
+    else:
+        return page_path.match(ignore_pattern, case_sensitive=case_sensitive)
+
 
 def normalize_link(path: str, base_url: str = "") -> str:
     path = path.split("#", 1)[0] # Remove anything after a hashtag (exact anchor on page)

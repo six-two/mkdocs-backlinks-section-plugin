@@ -77,7 +77,7 @@ plugins:
 
 ## Notable changes
 
-### HEAD
+### Version 0.0.2
 
 - Added `ignore_links_from` and `ignore_links_to` configuration options
 
