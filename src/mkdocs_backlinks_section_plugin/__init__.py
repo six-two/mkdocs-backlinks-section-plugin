@@ -117,7 +117,8 @@ def path_try_full_match(page_path: PurePath, ignore_pattern: str, case_sensitive
     if hasattr(page_path, "full_match"):
         return page_path.full_match(ignore_pattern, case_sensitive=case_sensitive)
     else:
-        return page_path.match(ignore_pattern, case_sensitive=case_sensitive)
+        # Case sensitive is only available from Python 3.12
+        return page_path.match(ignore_pattern)
 
 
 def normalize_link(path: str, base_url: str = "") -> str:
