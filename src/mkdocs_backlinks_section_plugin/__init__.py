@@ -7,6 +7,7 @@ from pathlib import PurePath
 import random
 import re
 from typing import Optional
+import urllib.parse
 # pip
 from mkdocs.config.base import Config
 from mkdocs.config.config_options import Type, ListOfItems
@@ -58,8 +59,13 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             for url in parse_links_to_other_pages(html):
                 destination_link = normalize_link(url, page.url)
 
-                if destination_link in self.backlinks:
-                    self.backlinks[destination_link].add((page.url, page.title))
+                # Prevent the same page from linking back to itself
+                # @TODO: this only works for directory URLs. Also not sure how reliable it is
+                if destination_link != normalize_link("", page.url):
+                    if destination_link in self.backlinks:
+                        self.backlinks[destination_link].add((page.url, page.title))
+                else:
+                    LOGGER.debug(f"Link to self on {page.url} ignored")
 
         return html
 
@@ -76,13 +82,22 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                 backlink_html += "<ul>"
                 # sort by title
                 for link, title in sorted(links, key=lambda x: x[1]):
-                    link_to_page = "/" + link # @TODO: only for testing, this will break later # @TODO: escape?
+                    link_to_page = get_relative_path_from(page.url, link)
                     backlink_html += f'<li><a href="{link_to_page}">{html.escape(title)}</a></li>'
                 backlink_html += "</ul>"
                 output = output.replace(self.backlink_placeholder, backlink_html)
             else:
                 output = output.replace(self.backlink_placeholder, f"<p>{html.escape(self.config.description_no_links)}</p>")
             return output
+
+
+def get_relative_path_from(current_page: str, absolute_destination_link: str) -> str:
+    level = current_page.count("/")
+    relative_url = ("../" * level) + absolute_destination_link
+
+    LOGGER.warning(f"{current_page} | {absolute_destination_link} | {relative_url}")
+
+    return relative_url
 
 
 def should_ignore_page(page: Page, ignore_pattern_list: list[str]) -> bool:
@@ -96,7 +111,12 @@ def should_ignore_page(page: Page, ignore_pattern_list: list[str]) -> bool:
 
 def normalize_link(path: str, base_url: str = "") -> str:
     path = path.split("#", 1)[0] # Remove anything after a hashtag (exact anchor on page)
-    # @TODO: handle URL encoding?
+
+    # decode URLs in case they contain URL encoded data
+    path = urllib.parse.unquote(path)
+
+    # Since some operating systems can have canse insensitive paths, we convert them to lowercase
+    path = path.lower()
 
     # @TODO: isn't this dependent on how directory urls? A: probs not, does not need to be "right", just consistent(ly wrong)
     if path.startswith("/"):
@@ -133,12 +153,12 @@ def parse_href_from_anchor_tag(anchor_tag: str) -> Optional[str]:
                 if link[0] == link[-1]:
                     return link[1:-1]
                 else:
-                    LOGGER.warn(f"href does not have matching quotes: {link}")
+                    LOGGER.warning(f"href does not have matching quotes: {link}")
                     return ""
             else:
                 return link
     
-    LOGGER.warn(f"anchor tag has no href: {anchor_tag}")
+    LOGGER.warning(f"anchor tag has no href: {anchor_tag}")
     return ""
 
 

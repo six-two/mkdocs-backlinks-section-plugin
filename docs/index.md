@@ -1,6 +1,6 @@
 # Index
 
-This page links to [page A](page-a.md) and [page B](page-b.md).
+This page links to [page A](page-a.md), [page B](page-b.md) and the [nested file](file.md).
 
 ## First subsection
 

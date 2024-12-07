@@ -1,5 +1,6 @@
 site_name: My Docs
 use_directory_urls: true
+# site_url: https://example.com/test/
 
 plugins:
 - search
@@ -11,6 +12,7 @@ plugins:
 #     title: Rückverweise
 #     description: "Die folgenden Seiten referenzieren die aktuelle Seite:"
 #     description_no_links: Es gibt keine Verweise auf diese Seite.
+- ezlinks
 
 theme: material
 
