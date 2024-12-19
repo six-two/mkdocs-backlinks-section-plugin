@@ -6,6 +6,26 @@
 
 Adds a backlinks section that lists every page linking to the current page.
 
+## Comparision to similar plugins
+
+I wrote my plugin after trying some existing plugins and not being 100% happy with them.
+But depending on your intended use case, they may be a better fit.
+
+### mkdocs-backlinks
+
+My plugin is similar in concept to [mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks), but I wanted a plugin that works out of the box.
+
+With [mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks) you can specify exactly where and how you want to have your backlinks shown, but at the cost of having to potentially alter your template files.
+
+With my plugin you just need to add the plugin to your `mkdocs.yml`, but the backlinks can only be added as a section at the bottom of each page.
+
+### mkdocs-publisher
+
+[mkdocs-publisher](https://github.com/mkdocs-publisher/mkdocs-publisher) is a bundle of plugins.
+The `pub-obsidian` also has a backlinks feature.
+
+While my plugin does a single job and has minimal dependencies, mkdocs-publisher offers many more features but at the cost of many more dependencies.
+
 ## Installation
 
 You can install it with `pip`:

@@ -130,7 +130,6 @@ def normalize_link(path: str, base_url: str = "") -> str:
     # Since some operating systems can have canse insensitive paths, we convert them to lowercase
     path = path.lower()
 
-    # @TODO: isn't this dependent on how directory urls? A: probs not, does not need to be "right", just consistent(ly wrong)
     if path.startswith("/"):
         # Absolute URL
         path = os.path.normpath(path)[1:]
