@@ -6,6 +6,10 @@
 
 Adds a backlinks section that lists every page linking to the current page.
 
+The added backlinks section looks like this, but you can also customize the title and the text show above the list:
+
+![Screenshot of the backlinks section](screenshot.png)
+
 ## Comparision to similar plugins
 
 I wrote my plugin after trying some existing plugins and not being 100% happy with them.
