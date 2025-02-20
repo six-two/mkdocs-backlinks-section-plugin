@@ -29,17 +29,23 @@ class BacklinksSectionConfig(Config):
     description_no_links = Type(str, default="No other pages link to this page.")
     ignore_links_from = ListOfItems(Type(str), [])
     ignore_links_to = ListOfItems(Type(str), [])
+    add_to_toc = Type(bool, default=True)
+    hide_if_empty = Type(bool, default=False) # Adding multiple eent handlers for the on_page_content did not work as I hoped (handler 2 ran before all other pages were processed by handler 1). So we need to remove the backlinks section from the nav or risk linking to an empty section
 
 class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
     def __init__(self):
         # Use a random placeholder to prevent accidential collisions with strings like BACKLINK_PLUGIN
-        self.backlink_placeholder = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"
+        self.backlink_placeholder = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"        
     
     def on_nav(self, nav, config: MkDocsConfig, files: Files):
         # self.backlinks | normalized_url: str -> (page_url: str, page_title: str)
         self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files}
         self.ignore_links_from = [normalize_link(x) for x in self.config.ignore_links_from]
         self.ignore_links_to = [x[1:] if x.startswith("/") else x for x in self.config.ignore_links_to]
+        self.add_to_toc = self.config.add_to_toc
+        if self.add_to_toc and self.config.hide_if_empty:
+            self.add_to_toc = False
+            LOGGER.warning("'add_to_toc' and 'hide_if_empty' are mutually exclusive. Since 'hide_if_empty' has precedence, 'add_to_toc' has been disabled. You can hide this warning by explicitly setting 'add_to_toc: false'")
 
         if not hasattr(PurePath("/"), "full_match"):
             # Fullmatch "**" is not supported. Check if the patterns actually use it
@@ -53,8 +59,11 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             return markdown
         else:
             # Add backlinks section placeholder
-            # We need to do this in the Markdown phase, so that the new section is added to the table of contents
-            return f"{markdown}\n\n## {self.config.title}\n\n{self.backlink_placeholder}"
+            if self.add_to_toc:
+                # We need to add the heading in the Markdown phase, so that the new section is added to the table of contents
+                return f"{markdown}\n\n## {self.config.title}\n\n{self.backlink_placeholder}"
+            else:
+                return f"{markdown}\n\n{self.backlink_placeholder}"
 
     def on_page_content(self, html, page: Page, config: MkDocsConfig, files: Files) -> str:
         if should_ignore_page(page, self.ignore_links_from):
@@ -71,7 +80,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                         self.backlinks[destination_link].add((page.url, page.title))
                 else:
                     LOGGER.debug(f"Link to self on {page.url} ignored")
-
+        
         return html
 
     def on_post_page(self, output: str, page: Page, config: MkDocsConfig) -> str:
@@ -83,16 +92,32 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             key = normalize_link(page.url, "")
             links = self.backlinks[key]
             if links:
-                backlink_html = f"<p>{html.escape(self.config.description)}</p>" if self.config.description else ""
+                if self.add_to_toc:
+                    # The heading is already added, since it needed to be there before the TOC generation
+                    backlink_html = ""
+                else:
+                    backlink_html = f"<h2>{html.escape(self.config.title)}</h2>"
+
+                backlink_html += f"<p>{html.escape(self.config.description)}</p>" if self.config.description else ""
                 backlink_html += "<ul>"
                 # sort by title
                 for link, title in sorted(links, key=lambda x: x[1]):
                     link_to_page = get_relative_path_from(page.url, link)
                     backlink_html += f'<li><a href="{link_to_page}">{html.escape(title)}</a></li>'
                 backlink_html += "</ul>"
-                output = output.replace(self.backlink_placeholder, backlink_html)
             else:
-                output = output.replace(self.backlink_placeholder, f"<p>{html.escape(self.config.description_no_links)}</p>")
+                if self.config.hide_if_empty:
+                    backlink_html = ""
+                else:
+                    if self.add_to_toc:
+                        # The heading is already added, since it needed to be there before the TOC generation
+                        backlink_html = ""
+                    else:
+                        backlink_html = f"<h2>{html.escape(self.config.title)}</h2>"
+                    backlink_html += f"<p>{html.escape(self.config.description_no_links)}</p>"
+
+            # Replace our placeholder with the actual section's text
+            output = output.replace(self.backlink_placeholder, backlink_html)
             return output
 
 

@@ -12,6 +12,8 @@ plugins:
 #     title: Rückverweise
 #     description: "Die folgenden Seiten referenzieren die aktuelle Seite:"
 #     description_no_links: Es gibt keine Verweise auf diese Seite.
+    add_to_toc: false
+    hide_if_empty: true
 - ezlinks
 
 theme: material

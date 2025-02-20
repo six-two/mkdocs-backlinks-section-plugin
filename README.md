@@ -101,6 +101,12 @@ plugins:
 
 ## Notable changes
 
+### HEAD
+
+- Added `add_to_toc` option, which controls whether to add the backlinks section to the table of contents.
+- Added `hide_if_empty` option, which will hide the backlinks section, if no backlinks exist.
+    This requires `add_to_toc` to be false, otherwise the table of contents would point to a potentially non-existent section.
+
 ### Version 0.0.3
 
 - Fixed crash with Python <= 3.12
