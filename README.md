@@ -99,9 +99,35 @@ plugins:
     - index.md
 ```
 
+### Hide section
+
+Option | Type | Default value
+--- | --- | ---
+`add_to_toc` | boolean | `true`
+`hide_if_empty` | boolean | `false`
+
+If you do not want a backlinks section to be added to the table of contents of seach page, you can set the `add_to_toc` parameter to `false`:
+```yaml
+plugins:
+- search
+- backlinks_section:
+    add_to_toc: false
+```
+
+If you want to hide the backlinks section from pages which have no backlinks, you can set the `hide_if_empty` attribute to `true`.
+Please note that in the current implementation this also requires always hiding the section title (even if the section exists) from the table of contents.
+To suppress the warning about this it is recommended to explicitly set `add_to_toc` to `false` too:
+```yaml
+plugins:
+- search
+- backlinks_section:
+    add_to_toc: false
+    hide_if_empty: true
+```
+
 ## Notable changes
 
-### HEAD
+### Version 0.0.4
 
 - Added `add_to_toc` option, which controls whether to add the backlinks section to the table of contents.
 - Added `hide_if_empty` option, which will hide the backlinks section, if no backlinks exist.
