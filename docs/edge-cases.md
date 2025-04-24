@@ -29,3 +29,21 @@ It is also configured to not list backlinks.
 [URL encoding in Markdown](/%70a%67e-%61/)
 
 [URL with spaces in it](https://example.com/Some File.txt)
+
+```md
+- Some
+- Multiline
+- Text
+- Listing
+```
+
+```md linenums="1"
+- Some
+- Multiline
+- Text
+- Listing
+    - with
+    - line
+    - numbers
+```
+

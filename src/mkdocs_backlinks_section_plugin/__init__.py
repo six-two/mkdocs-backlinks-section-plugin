@@ -74,7 +74,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             LOGGER.debug(f"Ignoring links from page: {page.file.src_uri}")
         else:
             # Collect the backlinks
-            for url in parse_links_to_other_pages(html, page.url):
+            for url in parse_links_to_other_pages(html, page.file.src_uri):
                 destination_link = normalize_link(url, page.url)
 
                 # Prevent the same page from linking back to itself
@@ -188,6 +188,9 @@ def parse_href_from_anchor_tag(anchor_tag: str, page_name: str) -> Optional[str]
     parser.feed(anchor_tag)
     if parser.href:
         return parser.href
+    elif parser.id.startswith("__codelineno-"):
+        # These are created when you enable line numbers in listings (linenums="1"). We can silently ignore them
+        return ""
     else:
         LOGGER.warning(f"On page '{page_name}' an anchor tag has no href: {anchor_tag}")
         return ""
@@ -207,10 +210,13 @@ def parse_links_to_other_pages(html: str, page_name: str) -> list[str]:
 class AnchorHrefExtractor(HTMLParser):
     def __init__(self):
         super().__init__()
-        self.href = None
+        self.href = ""
+        self.id = ""
 
     def handle_starttag(self, tag, attrs):
         if tag == "a":
             for attr_name, attr_value in attrs:
                 if attr_name == "href":
                     self.href = attr_value
+                if attr_name == "id":
+                    self.id = attr_value

@@ -127,6 +127,11 @@ plugins:
 
 ## Notable changes
 
+### Version 0.0.5
+
+- Ignore empty link tags created by listings with line numbers (`linenums="1"`)
+- In warning messages show which file caused the warning
+
 ### Version 0.0.4
 
 - Added `add_to_toc` option, which controls whether to add the backlinks section to the table of contents.
