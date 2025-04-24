@@ -27,3 +27,5 @@ It is also configured to not list backlinks.
 <a href="/%70a%67e-%61/">URL encoding in target</a>
 
 [URL encoding in Markdown](/%70a%67e-%61/)
+
+[URL with spaces in it](https://example.com/Some File.txt)

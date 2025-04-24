@@ -8,7 +8,7 @@ Adds a backlinks section that lists every page linking to the current page.
 
 The added backlinks section looks like this, but you can also customize the title and the text show above the list:
 
-![Screenshot of the backlinks section](screenshot.png)
+![Screenshot of the backlinks section](https://github.com/six-two/mkdocs-backlinks-section-plugin/raw/main/screenshot.png)
 
 ## Comparision to similar plugins
 

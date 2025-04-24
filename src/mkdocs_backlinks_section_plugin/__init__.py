@@ -3,6 +3,7 @@
 # The idea is based roughly on https://github.com/danodic-dev/mkdocs-backlinks, but instead of dealing with a template, this plugin just injects the backlinks into the HTML at the bottom of the page
 import os
 import html
+from html.parser import HTMLParser
 from pathlib import PurePath
 import random
 import re
@@ -20,6 +21,9 @@ from mkdocs.structure.pages import Page
 BAD_URL_STARTS = ["http://", "https://", "tel:", "#"]
 # Regular expression for anchor tags
 LINK_START_TAG_REGEX = re.compile(r"<a[^>]*>", re.MULTILINE)
+HREF_DOUBLE_QUOTED_REGEX = re.compile(r'\shref="([^"]*)"')
+HREF_SINGLE_QUOTED_REGEX = re.compile(r"\shref='([^']*)'")
+HREF_UNQUOTED_REGEX = re.compile(r"\shref=([^\s>]*)")
 # Logger
 LOGGER = get_plugin_logger(__name__)
 
@@ -70,7 +74,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             LOGGER.debug(f"Ignoring links from page: {page.file.src_uri}")
         else:
             # Collect the backlinks
-            for url in parse_links_to_other_pages(html):
+            for url in parse_links_to_other_pages(html, page.url):
                 destination_link = normalize_link(url, page.url)
 
                 # Prevent the same page from linking back to itself
@@ -179,31 +183,34 @@ def is_valid_link(url: str) -> bool:
     return True
 
 
-def parse_href_from_anchor_tag(anchor_tag: str) -> Optional[str]:
-    for part in anchor_tag.split():
-        if part.endswith(">"):
-            part = part[:-1]
-        if part.startswith("href="):
-            link = part[5:]
-            if link[0] in ["\"", "'"]:
-                if link[0] == link[-1]:
-                    return link[1:-1]
-                else:
-                    LOGGER.warning(f"href does not have matching quotes: {link}")
-                    return ""
-            else:
-                return link
-    
-    LOGGER.warning(f"anchor tag has no href: {anchor_tag}")
-    return ""
+def parse_href_from_anchor_tag(anchor_tag: str, page_name: str) -> Optional[str]:
+    parser = AnchorHrefExtractor()
+    parser.feed(anchor_tag)
+    if parser.href:
+        return parser.href
+    else:
+        LOGGER.warning(f"On page '{page_name}' an anchor tag has no href: {anchor_tag}")
+        return ""
 
 
-def parse_links_to_other_pages(html: str) -> list[str]:
+def parse_links_to_other_pages(html: str, page_name: str) -> list[str]:
     results = []
     for link_start_tag in LINK_START_TAG_REGEX.findall(html):
-        link = parse_href_from_anchor_tag(link_start_tag)
+        link = parse_href_from_anchor_tag(link_start_tag, page_name)
         if link and is_valid_link(link):
             results.append(link)
     
     return results
 
+
+# This should handle all edge cases properly, since it is a full HTML parser. But it luckily needs no external dependencies
+class AnchorHrefExtractor(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.href = None
+
+    def handle_starttag(self, tag, attrs):
+        if tag == "a":
+            for attr_name, attr_value in attrs:
+                if attr_name == "href":
+                    self.href = attr_value
