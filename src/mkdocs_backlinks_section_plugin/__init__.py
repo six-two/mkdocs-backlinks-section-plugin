@@ -34,16 +34,22 @@ class BacklinksSectionConfig(Config):
     ignore_links_from = ListOfItems(Type(str), [])
     ignore_links_to = ListOfItems(Type(str), [])
     add_to_toc = Type(bool, default=True)
+    debug = Type(bool, default=False)
     hide_if_empty = Type(bool, default=False) # Adding multiple eent handlers for the on_page_content did not work as I hoped (handler 2 ran before all other pages were processed by handler 1). So we need to remove the backlinks section from the nav or risk linking to an empty section
 
 class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
     def __init__(self):
         # Use a random placeholder to prevent accidential collisions with strings like BACKLINK_PLUGIN
-        self.backlink_placeholder = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"        
+        self.backlink_placeholder = f"BACKLINK_PLUGIN_{random.randint(0,10000000)}_PLACEHOLDER"
+
+    def debug(self, message: str):
+        if self.config.debug:
+            LOGGER.info(f"[DEBUG] {message}")
     
     def on_nav(self, nav, config: MkDocsConfig, files: Files):
         # self.backlinks | normalized_url: str -> (page_url: str, page_title: str)
         self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files}
+        self.debug(f"Known page links: {', '.join(self.backlinks)}")
         self.ignore_links_from = [normalize_link(x) for x in self.config.ignore_links_from]
         self.ignore_links_to = [x[1:] if x.startswith("/") else x for x in self.config.ignore_links_to]
         self.add_to_toc = self.config.add_to_toc
@@ -57,7 +63,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                 LOGGER.warning("Your Python does not support the Path.full_match method. Since you use '**' in your patterns, this may not be interpreted correctly. To fix it update your Python to 3.13")
         return nav
 
-    def on_page_markdown(self, markdown, page: Page, config: MkDocsConfig, files: Files) -> str:
+    def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         if should_ignore_page(page, self.ignore_links_to):
             # Ignore the page and skip the backlinks section
             return markdown
@@ -69,9 +75,9 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             else:
                 return f"{markdown}\n\n{self.backlink_placeholder}"
 
-    def on_page_content(self, html, page: Page, config: MkDocsConfig, files: Files) -> str:
+    def on_page_content(self, html: str, page: Page, config: MkDocsConfig, files: Files) -> str:
         if should_ignore_page(page, self.ignore_links_from):
-            LOGGER.debug(f"Ignoring links from page: {page.file.src_uri}")
+            self.debug(f"Ignoring links from page: {page.file.src_uri}")
         else:
             # Collect the backlinks
             for url in parse_links_to_other_pages(html, page.file.src_uri):
@@ -82,8 +88,10 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                 if destination_link != normalize_link("", page.url):
                     if destination_link in self.backlinks:
                         self.backlinks[destination_link].add((page.url, page.title))
+                    else:
+                        self.debug(f"Link to unknown page ignored: {url} (normalized: {destination_link})")
                 else:
-                    LOGGER.debug(f"Link to self on {page.url} ignored")
+                    self.debug(f"Link to self on {page.url} ignored")
         
         return html
 
@@ -156,9 +164,6 @@ def normalize_link(path: str, base_url: str = "") -> str:
     # decode URLs in case they contain URL encoded data
     path = urllib.parse.unquote(path)
 
-    # Since some operating systems can have canse insensitive paths, we convert them to lowercase
-    path = path.lower()
-
     if path.startswith("/"):
         # Absolute URL
         path = os.path.normpath(path)[1:]
@@ -167,6 +172,9 @@ def normalize_link(path: str, base_url: str = "") -> str:
             path = os.path.join(os.path.dirname(base_url), path)
     
         path = os.path.normpath(path)
+
+    # Since some operating systems can have canse insensitive paths, we convert them to lowercase
+    path = path.lower()
 
     if path.endswith("/index.html") or path == "index.html":
         path = path[:-len("index.html")]

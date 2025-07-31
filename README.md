@@ -10,7 +10,7 @@ The added backlinks section looks like this, but you can also customize the titl
 
 ![Screenshot of the backlinks section](https://github.com/six-two/mkdocs-backlinks-section-plugin/raw/main/screenshot.png)
 
-## Comparision to similar plugins
+## Comparison to similar plugins
 
 I wrote my plugin after trying some existing plugins and not being 100% happy with them.
 But depending on your intended use case, they may be a better fit.
@@ -106,7 +106,7 @@ Option | Type | Default value
 `add_to_toc` | boolean | `true`
 `hide_if_empty` | boolean | `false`
 
-If you do not want a backlinks section to be added to the table of contents of seach page, you can set the `add_to_toc` parameter to `false`:
+If you do not want a backlinks section to be added to the table of contents of search page, you can set the `add_to_toc` parameter to `false`:
 ```yaml
 plugins:
 - search
