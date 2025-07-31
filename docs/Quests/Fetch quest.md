@@ -2,4 +2,4 @@
 
 <!-- A boring [quest](../quests/quests.md). -->
 
-<a href="../quests/">Test</a>
+<a href="../List/">List of quests</a>

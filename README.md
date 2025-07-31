@@ -125,7 +125,22 @@ plugins:
     hide_if_empty: true
 ```
 
+### Troubleshooting
+
+Option | Type | Default value
+--- | --- | ---
+`debug` | boolean | `false`
+
+Used by me to debug problems with backlink generation.
+If you open a GitHub issue, it would be best to provide me a minimum working example, with which I can reproduce your problem.
+If that is not possible (for example because your project is private), it would help me if you supply the output of mkdocs when you set `debug: True`.
+
 ## Notable changes
+
+### Version 0.0.6
+
+- Fixed an issue with backlinks not appearing on some pages (see #3)
+- Added `debug` option to help with troubleshooting
 
 ### Version 0.0.5
 

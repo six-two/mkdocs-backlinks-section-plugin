@@ -48,8 +48,8 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
     
     def on_nav(self, nav, config: MkDocsConfig, files: Files):
         # self.backlinks | normalized_url: str -> (page_url: str, page_title: str)
-        self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files}
-        self.debug(f"Known page links: {', '.join(self.backlinks)}")
+        self.backlinks: dict[str,set[tuple[str,str]]] = {normalize_link(file.url): set() for file in files if is_page_url(file.url)}
+        self.debug(f"Normalized links of all pages: {', '.join(self.backlinks)}")
         self.ignore_links_from = [normalize_link(x) for x in self.config.ignore_links_from]
         self.ignore_links_to = [x[1:] if x.startswith("/") else x for x in self.config.ignore_links_to]
         self.add_to_toc = self.config.add_to_toc
@@ -87,7 +87,8 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                 # @TODO: this only works for directory URLs. Also not sure how reliable it is
                 if destination_link != normalize_link("", page.url):
                     if destination_link in self.backlinks:
-                        self.backlinks[destination_link].add((page.url, page.title))
+                        page_title = str(page.title) if page.title else "Untitled Page"
+                        self.backlinks[destination_link].add((page.url, page_title))
                     else:
                         self.debug(f"Link to unknown page ignored: {url} (normalized: {destination_link})")
                 else:
@@ -102,7 +103,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         else:
             # Insert the backlink list
             key = normalize_link(page.url, "")
-            links = self.backlinks[key]
+            links = self.backlinks.get(key, [])
             if links:
                 if self.add_to_toc:
                     # The heading is already added, since it needed to be there before the TOC generation
@@ -132,6 +133,10 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             output = output.replace(self.backlink_placeholder, backlink_html)
             return output
 
+
+def is_page_url(url: str) -> bool:
+    # Recognize directory urls and normal pages
+    return url.endswith("/") or url.lower().endswith(".html")
 
 def get_relative_path_from(current_page: str, absolute_destination_link: str) -> str:
     level = current_page.count("/")
