@@ -1,6 +1,7 @@
 # Index
 
 This page links to [page A](page-a.md), [page B](page-b.md) and the [nested file](file.md).
+Also links to a [page that is not in the nav](page-not-in-nav.md).
 
 ## First subsection
 

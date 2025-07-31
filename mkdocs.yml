@@ -18,6 +18,15 @@ plugins:
 
 theme: material
 
+nav:
+- index.md
+- page-a.md
+- page-b.md
+- page-c.md
+- edge-cases.md
+- ignore-links-from-this-page.md
+- path/to/file.md
+
 # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/
 markdown_extensions:
   - pymdownx.highlight:
