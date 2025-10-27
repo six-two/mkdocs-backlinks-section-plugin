@@ -19,8 +19,8 @@ from mkdocs.structure.pages import Page
 
 # Marks URLs that should be ignored
 BAD_URL_STARTS = ["http://", "https://", "tel:", "#"]
-# Regular expression for anchor tags
-LINK_START_TAG_REGEX = re.compile(r"<a[^>]*>", re.MULTILINE)
+# Regular expression for anchor tags (excludes autoref tags)
+LINK_START_TAG_REGEX = re.compile(r"<a(?:\s[^>]*)?>", re.MULTILINE)
 HREF_DOUBLE_QUOTED_REGEX = re.compile(r'\shref="([^"]*)"')
 HREF_SINGLE_QUOTED_REGEX = re.compile(r"\shref='([^']*)'")
 HREF_UNQUOTED_REGEX = re.compile(r"\shref=([^\s>]*)")
