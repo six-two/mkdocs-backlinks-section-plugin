@@ -137,6 +137,10 @@ If that is not possible (for example because your project is private), it would 
 
 ## Notable changes
 
+### Version 0.0.7
+
+- Fixed false positive warnings about missing `hrefs` for tags starting with `<a` (`<autoref>`, `<audio>`, etc). Thank you @kzndotsh (see #4)
+
 ### Version 0.0.6
 
 - Fixed an issue with backlinks not appearing on some pages (see #3)
