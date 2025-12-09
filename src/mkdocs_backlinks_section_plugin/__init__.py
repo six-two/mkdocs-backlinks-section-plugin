@@ -198,7 +198,7 @@ def parse_href_from_anchor_tag(anchor_tag: str, page_name: str) -> Optional[str]
     parser.feed(anchor_tag)
     if parser.href:
         return parser.href
-    elif parser.id.startswith("__codelineno-"):
+    elif parser.id and parser.id.startswith("__codelineno-"):
         # These are created when you enable line numbers in listings (linenums="1"). We can silently ignore them
         return ""
     else:

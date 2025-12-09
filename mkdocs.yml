@@ -27,6 +27,7 @@ nav:
 - edge-cases.md
 - ignore-links-from-this-page.md
 - path/to/file.md
+- "Test: Special Characters": special/index.md
 
 # https://squidfunk.github.io/mkdocs-material/reference/code-blocks/
 markdown_extensions:
