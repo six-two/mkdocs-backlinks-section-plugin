@@ -14,7 +14,7 @@ plugins:
 #     description_no_links: Es gibt keine Verweise auf diese Seite.
     add_to_toc: false
     hide_if_empty: true
-    # debug: True
+    debug: True
 - ezlinks
 
 theme: material
