@@ -87,7 +87,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                         page_title = str(page.title) if page.title else "Untitled Page"
                         self.backlinks[destination_link].add((page.url, page_title))
                     else:
-                        self.debug(f"Link to unknown page ignored: {url} (normalized: {destination_link})")
+                        self.debug(f"Link to unknown page ignored: {url} (normalized: {destination_link}). page.url={page.url}")
                 else:
                     self.debug(f"Link to self on {page.url} ignored")
         
@@ -171,7 +171,8 @@ def normalize_link(path: str, base_url: str = "") -> str:
         path = os.path.normpath(path)[1:]
     else:
         if base_url:
-            path = os.path.join(os.path.dirname(base_url), path)
+            base_url_decoded = urllib.parse.unquote(os.path.dirname(base_url))
+            path = os.path.join(base_url_decoded, path)
     
         path = os.path.normpath(path)
 
