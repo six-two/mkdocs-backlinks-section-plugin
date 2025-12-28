@@ -25,6 +25,7 @@ LINK_START_TAG_REGEX = re.compile(r"<a(?:\s[^>]*)?>", re.MULTILINE)
 LOGGER = get_plugin_logger(__name__)
 
 class BacklinksSectionConfig(Config):
+    add_section = Type(bool, default=True)
     title = Type(str, default="Backlinks")
     description = Type(str, default="The following pages link to this page:")
     description_no_links = Type(str, default="No other pages link to this page.")
@@ -33,6 +34,7 @@ class BacklinksSectionConfig(Config):
     add_to_toc = Type(bool, default=True)
     debug = Type(bool, default=False)
     hide_if_empty = Type(bool, default=False) # Adding multiple eent handlers for the on_page_content did not work as I hoped (handler 2 ran before all other pages were processed by handler 1). So we need to remove the backlinks section from the nav or risk linking to an empty section
+    jinja_variable_name = Type(str, default="backlinks") # For compatibility with / replacement of https://github.com/danodic-dev/mkdocs-backlinks
 
 class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
     def __init__(self):
@@ -61,7 +63,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         return nav
 
     def on_page_markdown(self, markdown: str, page: Page, config: MkDocsConfig, files: Files) -> str:
-        if should_ignore_page(page, self.ignore_links_to):
+        if should_ignore_page(page, self.ignore_links_to) or not self.config.add_section:
             # Ignore the page and skip the backlinks section
             return markdown
         else:
@@ -94,7 +96,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         return html
 
     def on_post_page(self, output: str, page: Page, config: MkDocsConfig) -> str:
-        if should_ignore_page(page, self.ignore_links_to):
+        if should_ignore_page(page, self.ignore_links_to) or not self.config.add_section:
             # Ignore the page and skip the backlinks section
             return output
         else:
@@ -129,6 +131,13 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
             # Replace our placeholder with the actual section's text
             output = output.replace(self.backlink_placeholder, backlink_html)
             return output
+
+    def on_page_context(self, context, page, config, nav):
+        backlinks = self.backlinks.get(normalize_link(page.url))
+        if backlinks:
+            # Keep compatibility with https://github.com/danodic-dev/mkdocs-backlinks?tab=readme-ov-file#usage by naming the attrubutes the same
+            context[self.config.jinja_variable_name] = [{"url": url, "title": title} for url, title in backlinks]
+        return context
 
 
 def is_page_url(url: str) -> bool:

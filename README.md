@@ -21,7 +21,8 @@ My plugin is similar in concept to [mkdocs-backlinks](https://github.com/danodic
 
 With [mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks) you can specify exactly where and how you want to have your backlinks shown, but at the cost of having to potentially alter your template files.
 
-With my plugin you just need to add the plugin to your `mkdocs.yml`, but the backlinks can only be added as a section at the bottom of each page.
+With my plugin you can just add it to your `mkdocs.yml` without any theme changes.
+But it can also work the same way as `mkdocs-backlinks`, so that you have full control over the output.
 
 ### mkdocs-publisher
 
@@ -72,7 +73,7 @@ plugins:
 ### Ignore pages
 
 You can ignore source and destination pages for the backlink section.
-The values are interpreted as [glob-like](https://docs.python.org/3/library/pathlib.html#pathlib-pattern-language) patterns, wich are matched against the paths of the Markdown source files.
+The values are interpreted as [glob-like](https://docs.python.org/3/library/pathlib.html#pathlib-pattern-language) patterns, which are matched against the paths of the Markdown source files.
 
 Option | Type | Default value
 --- | --- | ---
@@ -125,6 +126,49 @@ plugins:
     hide_if_empty: true
 ```
 
+### Jinja Template Mode
+
+Option | Type | Default value
+--- | --- | ---
+`add_section` | boolean | `true`
+`jinja_variable_name` | string | `backlinks`
+
+
+Similar to [mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks), this plugin also exposes backlinks to the page template.
+This allows you much more control about how and where to display your backlinks.
+If you want to use this feature, you can stop the plugin from adding a section:
+
+```yaml
+plugins:
+- search
+- backlinks_section:
+    add_section: false
+```
+
+If you want to use this side by side with the `mkdocs-backlinks` plugin or your theme expects the variable to be named something else, you can change the name of the Jinja variable that the plugin writes to:
+
+```yaml
+plugins:
+- search
+- backlinks_section:
+    add_section: false
+    jinja_variable_name: backlinks_section_plugin
+```
+
+
+And then add some code for backlinks to your theme (see [this MkDocs Material page](https://squidfunk.github.io/mkdocs-material/customization/#extending-the-theme), for other themes you need to figure that part out on your own):
+
+```html
+{% if backlinks %}
+<h3>Backlinks:</h3>
+<ul>
+    {% for backlink in backlinks %}
+    <li><a href="/{{ backlink.url }}">{{ backlink.title }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+```
+
 ### Troubleshooting
 
 Option | Type | Default value
@@ -136,6 +180,12 @@ If you open a GitHub issue, it would be best to provide me a minimum working exa
 If that is not possible (for example because your project is private), it would help me if you supply the output of mkdocs when you set `debug: True`.
 
 ## Notable changes
+
+### Head
+
+- Added jinja support and `jinja_variable_name` option.
+    By default this plugin works as a replacement for [danodic-dev/mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks).
+    You can change the `jinja_variable_name` to something else, so that both plugins can co-exist.
 
 ### Version 0.0.8
 

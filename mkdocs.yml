@@ -15,9 +15,12 @@ plugins:
     add_to_toc: false
     hide_if_empty: true
     # debug: True
+    # add_section: False
 - ezlinks
 
-theme: material
+theme: 
+    name: material
+    custom_dir: overrides
 
 nav:
 - index.md

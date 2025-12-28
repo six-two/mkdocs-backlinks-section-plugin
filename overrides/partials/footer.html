@@ -1,0 +1,12 @@
+{% if backlinks %}
+<h3>Test Backlinks in Footer:</h3>
+<ul>
+    {% for backlink in backlinks %}
+    <li><a href="/{{ backlink.url }}">{{ backlink.title }}</a></li>
+    {% endfor %}
+</ul>
+{% else %}
+<b>This page has no other pages pointing to it</b>
+{% endif %}
+
+<!-- Debug: {{ backlinks }} -->
