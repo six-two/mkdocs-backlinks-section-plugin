@@ -102,7 +102,7 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
         else:
             # Insert the backlink list
             key = normalize_link(page.url, "")
-            links = self.backlinks.get(key, [])
+            links: set[tuple[str,str]] = self.backlinks.get(key, set())
             if links:
                 if self.add_to_toc:
                     # The heading is already added, since it needed to be there before the TOC generation

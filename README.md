@@ -181,10 +181,10 @@ If that is not possible (for example because your project is private), it would 
 
 ## Notable changes
 
-### Head
+### Version 0.0.9
 
-- Added jinja support and `jinja_variable_name` option.
-    By default this plugin works as a replacement for [danodic-dev/mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks).
+- Added Jinja support and `jinja_variable_name` option (see #6).
+    By default, this plugin works as a replacement for [danodic-dev/mkdocs-backlinks](https://github.com/danodic-dev/mkdocs-backlinks).
     You can change the `jinja_variable_name` to something else, so that both plugins can co-exist.
 
 ### Version 0.0.8
