@@ -129,7 +129,12 @@ class BacklinksSectionPlugin(BasePlugin[BacklinksSectionConfig]):
                     backlink_html += f"<p>{html.escape(self.config.description_no_links)}</p>"
 
             # Replace our placeholder with the actual section's text
-            output = output.replace(self.backlink_placeholder, backlink_html)
+            wrapped_placeholder = "<p>" + self.backlink_placeholder + "</p>"
+            if wrapped_placeholder in output:
+                output = output.replace(wrapped_placeholder, backlink_html)
+            else:
+                output = output.replace(self.backlink_placeholder, backlink_html)
+                LOGGER.debug(f"Did not find wrapped placeholder on page {page.abs_url}")
             return output
 
     def on_page_context(self, context, page, config, nav):
