@@ -181,6 +181,10 @@ If that is not possible (for example because your project is private), it would 
 
 ## Notable changes
 
+### Version 0.0.10
+
+- Removed unnecessary `<p>` around backlinks section (see #7)
+
 ### Version 0.0.9
 
 - Added Jinja support and `jinja_variable_name` option (see #6).
