@@ -1,2 +1,4 @@
+# Used for local tests only
+properdocs
 mkdocs-ezlinks-plugin
-mkdocs-material
+mkdocs-materialx

@@ -31,6 +31,11 @@ The `pub-obsidian` also has a backlinks feature.
 
 While my plugin does a single job and has minimal dependencies, mkdocs-publisher offers many more features but at the cost of many more dependencies.
 
+## Note on Zensical, MkDocs 1.x, ProperDocs, etc
+
+To make it easy to keep it up to date for all my plugins, I hosted my [intentions of what platforms to support](https://six-two.dev/plugin-support-for-mkdocs-and-forks/) on my website.
+
+
 ## Installation
 
 You can install it with `pip`:
@@ -180,6 +185,10 @@ If you open a GitHub issue, it would be best to provide me a minimum working exa
 If that is not possible (for example because your project is private), it would help me if you supply the output of mkdocs when you set `debug: True`.
 
 ## Notable changes
+
+### Veersion 0.1.0
+
+- Removed `mkdocs` from dependency declaration
 
 ### Version 0.0.10
 
