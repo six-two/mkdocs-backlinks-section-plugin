@@ -12,7 +12,7 @@ The added backlinks section looks like this, but you can also customize the titl
 
 ## Note on Zensical, MkDocs 1.x, ProperDocs, etc
 
-To make it easy to keep it up to date for all my plugins, I hosted my [intentions of what platforms to support](https://six-two.dev/plugin-support-for-mkdocs-and-forks/) on my website. Due the reliance on the site generator for parsing page titles and final URLs, no standalone port is planned, so Zensical support is not planned as long as the [Python API bindings](https://zensical.org/about/roadmap/?h=modu#module-system) in Zensical still does not exist.
+To make it easy to keep it up to date for all my plugins, I hosted my [intentions of what platforms to support](https://six-two.dev/plugin-support-for-mkdocs-and-forks/) on my website. Due the reliance on the site generator (MkDocs) for parsing page titles and final URLs, no standalone port is planned. Therefore, Zensical support is not planned as long as the [Python API bindings](https://zensical.org/about/roadmap/?h=modu#module-system) in Zensical still do not exist.
 
 ## Comparison to similar plugins
 
